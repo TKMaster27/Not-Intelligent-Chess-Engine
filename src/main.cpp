@@ -1,10 +1,11 @@
 #include <iostream>
+#include "Board.hpp"
 
 int main(){
 
+  Board gameBoard;
   
   
-  std::cout << "Hello Chess" << std::endl;
 
   return 0;
 }
