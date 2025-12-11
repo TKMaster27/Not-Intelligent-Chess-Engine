@@ -1,7 +1,20 @@
+CXX = clang++
+CXXFLAGS = -std=c++20 -Wall -Wextra -O2
 
+SRCS = $(wildcard src/*.cpp)
+OBJS = $(SRCS:.cpp=.o)
 
-run: src/main.cpp
-	clang++ src/main.cpp -o nice.exe
+TARGET = nice.exe
 
-clean: 
-	rm *.exe 
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $(TARGET)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+run: $(TARGET)
+	./$(TARGET)
+
+clean:
+	rm -f $(TARGET) $(OBJS)
+
