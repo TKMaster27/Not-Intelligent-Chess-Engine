@@ -2,23 +2,23 @@
 #define _Board_H 
 
 
-#define WHITE_PAWN 1
-#define WHITE_KNIGHT 2
-#define WHITE_BISHOP 3
-#define WHITE_ROOK   4
-#define WHITE_QUEEN 5
-#define WHITE_KING 6
+#define WHITE_PAWN 0
+#define WHITE_KNIGHT 1
+#define WHITE_BISHOP 2
+#define WHITE_ROOK   3
+#define WHITE_QUEEN 4
+#define WHITE_KING 5
 
-#define BLACK_PAWN 7
-#define BLACK_KNIGHT 8
-#define BLACK_BISHOP 9
-#define BLACK_ROOK 10
-#define BLACK_QUEEN 11
-#define BLACK_KING 12
+#define BLACK_PAWN 6
+#define BLACK_KNIGHT 7
+#define BLACK_BISHOP 8
+#define BLACK_ROOK 9
+#define BLACK_QUEEN 10
+#define BLACK_KING 11
 
-#define BLACK_OCC 13
-#define WHITE_OCC 14
-#define ALL_OCC 15
+#define BLACK_OCC 12
+#define WHITE_OCC 13
+#define ALL_OCC 14
 
 #include <string>
 

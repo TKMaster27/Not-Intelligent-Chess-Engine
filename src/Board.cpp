@@ -19,6 +19,8 @@ Board::Board(const std::string &fenConfig) {
 
   std::cout << position << std::endl;
 
+  initBitBoards(position);
+
 }
 
 Board::~Board(){}
@@ -37,7 +39,7 @@ void Board::initBitBoards(const std::string &pos){
       int skips = c - '0';
       for(int i = 0; i < skips; ++i ){
 
-        boardArr[current++] = '0';
+        boardArr[current++] = ' ';
       }
     } else if (std::isalpha(c)) {
 
@@ -74,7 +76,18 @@ void Board::initBitBoards(const std::string &pos){
 }
 
 void Board::printBoard() const {
-  std::string result = "+---+---+---+---+---+---+---+---+";
+  std::string result = "+---+---+---+---+---+---+---+---+\n";
+
+  for (size_t i = 0; i < 8; i++) {
+    for (size_t j = 0; j < 8; j++) {
+      result+= "| ";
+      result+=boardArr[i*8+j];
+      result+= " ";
+
+    }
+    result+="+\n+---+---+---+---+---+---+---+---+\n";
+;
+  }
 
 
   std::cout << result;
