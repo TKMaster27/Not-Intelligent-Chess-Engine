@@ -2,6 +2,7 @@
 #include <string>
 #include "Board.hpp"
 #include "Move.hpp"
+#include "Types.hpp"
 
 int main(){
 
