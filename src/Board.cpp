@@ -85,10 +85,30 @@ void Board::printBoard() const {
       result+= " ";
 
     }
-    result+="+\n+---+---+---+---+---+---+---+---+\n";
-;
+    result+="|\n+---+---+---+---+---+---+---+---+\n";
+
   }
 
 
   std::cout << result;
+}
+
+void Board::printBitBoard(const int index) const {
+  std::string result = "+---+---+---+---+---+---+---+---+\n";
+
+  for (size_t i = 0; i < 8; i++) {
+    for (size_t j = 0; j < 8; j++) {
+      int posIndex = i*8+j;
+      result+= "| ";
+      result+= (1UL<<posIndex & bitboards[index]) > 0 ? "x" : " ";
+      result+= " ";
+
+    }
+    result+="|\n+---+---+---+---+---+---+---+---+\n";
+
+  }
+
+
+  std::cout << result;
+
 }

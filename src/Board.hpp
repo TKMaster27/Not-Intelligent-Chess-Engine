@@ -16,8 +16,8 @@
 #define BLACK_QUEEN 10
 #define BLACK_KING 11
 
-#define BLACK_OCC 12
-#define WHITE_OCC 13
+#define WHITE_OCC 12
+#define BLACK_OCC 13
 #define ALL_OCC 14
 
 #include <string>
