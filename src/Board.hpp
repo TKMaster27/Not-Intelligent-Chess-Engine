@@ -1,6 +1,8 @@
 #ifndef _Board_H
 #define _Board_H 
 
+#define WHITE "w"
+#define BLACK "b"
 
 #define WHITE_PAWN 0
 #define WHITE_KNIGHT 1
@@ -21,19 +23,27 @@
 #define ALL_OCC 14
 
 #include <string>
+#include <vector>
+#include <cstdint>
+
+#include "Move.hpp"
 
 class Board {
   private:
-    unsigned long bitboards[16]; // represents the entrire board with an array of bitboards
+    uint64_t bitboards[16]; // represents the entrire board with an array of bitboards
     std::string activeColour;
     std::string castling;
     std::string ep_target;
     int halfMoves;
     int fullMoves;
 
-    char boardArr[64]; 
+    int boardArr[64]; 
 
     void initBitBoards(const std::string &pos);
+
+    std::string convertSquareToCord(int square);
+
+    int convertCordToSquare(const std::string &cord);
 
   public:
 
@@ -45,7 +55,11 @@ class Board {
 
     // destructor
     ~Board();
+    
+    // move a piece form one place to another place
+    void makeMove(Move m);
 
+    // generates all possible moves in the current possition
     
 
     // prints out a specific bitbaard given the index
