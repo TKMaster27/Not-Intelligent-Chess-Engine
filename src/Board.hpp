@@ -10,7 +10,10 @@
 #include "Types.hpp"
 #include "Move.hpp"
 
+
+
 class Board {
+  friend class MoveGen;
   private:
     U64 bitboards[16]; // represents the entrire board with an array of bitboards
     int activeColour;
