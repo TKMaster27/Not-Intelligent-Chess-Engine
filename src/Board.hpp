@@ -26,9 +26,7 @@ class Board {
 
     void initBitBoards(const std::string &pos);
 
-    std::string convertSquareToCord(int square);
-
-    int convertCordToSquare(const std::string &cord);
+    
 
   public:
 
@@ -44,8 +42,9 @@ class Board {
     // move a piece form one place to another place
     void makeMove(Move m);
 
-    // generates all possible moves in the current possition
-    
+    std::string convertSquareToCord(int square);
+
+    int convertCordToSquare(const std::string &cord);    
 
     // prints out a specific bitbaard given the index
     void printBitBoard(const int index) const;
