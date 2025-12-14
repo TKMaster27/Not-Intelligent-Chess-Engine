@@ -49,5 +49,17 @@ enum CastlingRights {
     BQ_CA = 8  // 1000
 };
 
+enum Directions {
+    NORTH      = -8,
+    EAST       =  1,
+    SOUTH      =  8,
+    WEST       = -1,
+
+    NORTH_EAST = -7,
+    SOUTH_EAST =  9,
+    SOUTH_WEST =  7,
+    NORHT_WEST = -9
+};
+
 
 #endif

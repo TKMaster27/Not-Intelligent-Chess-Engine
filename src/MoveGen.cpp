@@ -88,7 +88,7 @@ std::vector<Move> MoveGen::generateMoves(const Board &board){
     generateKingMoves(board, MoveList);
     generateKnightMoves(board, MoveList);
     // generatePawnMoves(board, MoveList);
-    // generateSlidingMoves(board, MoveList);
+    generateSlidingMoves(board, MoveList);
 
     return MoveList;
 }
@@ -159,5 +159,90 @@ void MoveGen::generateKingMoves(const Board &board, std::vector<Move> &moveList)
                 moveList.push_back(makeMove(from, to));
             }
         }
+    }
+}
+
+void MoveGen::generateSlidingMoves(const Board &board, std::vector<Move> &moveList){
+    int side = board.activeColour;
+
+    // get occupancy bitboards
+    U64 sameColourPieces = (side == WHITE) ? board.bitboards[WHITE_OCC] : board.bitboards[BLACK_OCC];
+    U64 enemyPieces = (side == WHITE) ? board.bitboards[BLACK_OCC] : board.bitboards[WHITE_OCC]; 
+
+    // we will loop through each sliding piece (Bishop=2, Rook=3, Queen=4)
+    int pStart = (side == WHITE) ? WB : BB;
+    int pEnd = (side == WHITE) ? WQ : BQ;
+
+    for(int pieceType = pStart; pieceType <= pEnd; ++pieceType){
+
+        // get bitboard/location of all pieces of current type
+        U64 bitboard = board.bitboards[pieceType];
+
+        while(bitboard){
+            int from = popLSB(bitboard);
+
+            // direction arrays for each piece (which way they move)
+            // arrays are static so they are not recreated each time loop runs and created once
+            static const int rookDirections[] = {NORTH, EAST, SOUTH, WEST};
+            static const int bishopDirections[] = {NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORHT_WEST};
+            static const int queenDirections[] = {NORTH, NORTH_EAST, EAST, SOUTH_EAST, SOUTH, SOUTH_WEST, WEST, NORHT_WEST};
+
+            // pointer to the directions of current piece (naked pointer because now ownership of resources)
+            const int* offsets = nullptr;
+            int directionSize = 0;
+
+            // assign offset to current piece type
+
+            if(pieceType == WR || pieceType == BR){
+                offsets = rookDirections;
+                directionSize=4;
+            } else if (pieceType == WB || pieceType == BB) {
+                offsets = bishopDirections;
+                directionSize = 4;
+            } else {
+                offsets = queenDirections;
+                directionSize = 8;
+            }
+
+            for (int i = 0; i < directionSize; ++i){ // for each direction based on offsets and piece
+                int offset = offsets[i];
+                int to = from;
+
+                while(true) { // take a step in that direction
+
+                    // stop if moved too far to the left off the board (stop at A file)
+                    if ((offset == WEST || offset == NORHT_WEST || offset == SOUTH_WEST) && (to % 8) == 0) {
+                        break;
+                    }
+
+                    // stop if moved too far to the right off the board (stop at H file)
+                    if ((offset == EAST || offset == NORTH_EAST || offset == SOUTH_EAST) && (to % 8) == 7) {
+                        break;
+                    }
+
+                    to += offset;
+
+                    if (to < 0 || to > 63) break; // out of bound of the board
+
+                    // if friendly piece found, stop
+                    if(getBit(sameColourPieces, to)){
+                        break; // stop seach
+                    }
+
+                    // if enemy peice found
+                    if(getBit(enemyPieces, to)) {
+                        int capturedPiece = board.boardArr[to];
+                        moveList.push_back(makeMove(from, to, CAPTURE, 0, capturedPiece));
+                        break; // stop seaching after capture
+                    }
+
+                    // otherwise quiet move
+                    moveList.push_back(makeMove(from, to));
+
+                }
+            }
+        }
+
+
     }
 }
