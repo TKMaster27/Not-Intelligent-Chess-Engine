@@ -19,14 +19,13 @@ int main(int argc, char* argv[]) {
         depth = std::stoi(argv[2]);
     }
 
-    std::cout << "Running Perft Test..." << std::endl;
-    std::cout << "FEN:   " << fen << std::endl;
-    std::cout << "Depth: " << depth << std::endl;
-
     Board board(fen);
     
     // Run the divide function (shows detail)
-    Perft::perftDivide(board, depth);
+    uint64_t result = Perft::perft(board, depth);
+
+    // Output ONLY the result
+    std::cout << result << std::endl;
 
     return 0;
 }
