@@ -4,45 +4,29 @@
 #include "Move.hpp"
 #include "Types.hpp"
 #include "MoveGen.hpp"
+#include "Perft.hpp"
 
-int main(){
-
-  // White Pawns: e2 (start), b5 (attacker), h7 (promoter)
-    // Black Pieces: a6 (target), c6 (target)
-    Board board("8/7P/P1p5/1P6/8/8/4P3/8 w - - 0 1");
+int main(int argc, char* argv[]) {
     
-    board.printBoard();
-    std::cout << "\n--- Generating Pawn Moves ---" << std::endl;
-    
-    std::vector<Move> moves = MoveGen::generateMoves(board);
+    // Default to Start Position if no args provided (for quick testing)
+    std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    int depth = 1;
 
-    int count = 0;
-    for (Move m : moves) {
-        std::cout << board.convertSquareToCord(fromSq(m)) 
-                  << board.convertSquareToCord(toSq(m));
-        
-        // Print promotion suffix if needed
-        if (promo(m)) {
-            // Very basic char map for debug
-            char pChar = ' ';
-            switch(promo(m)) {
-                case WQ: case BQ: pChar = 'q'; break;
-                case WR: case BR: pChar = 'r'; break;
-                case WB: case BB: pChar = 'b'; break;
-                case WN: case BN: pChar = 'n'; break;
-            }
-            std::cout << pChar;
-        }
-        std::cout << " ";
-        
-        count++;
-        if (count % 8 == 0) std::cout << "\n";
+    // Optional: Parse command line args for automated testing
+    // Usage: ./engine "FEN" depth
+    if (argc >= 3) {
+        fen = argv[1];
+        depth = std::stoi(argv[2]);
     }
-    std::cout << "\nTotal Moves: " << moves.size() << std::endl;
 
+    std::cout << "Running Perft Test..." << std::endl;
+    std::cout << "FEN:   " << fen << std::endl;
+    std::cout << "Depth: " << depth << std::endl;
 
+    Board board(fen);
+    
+    // Run the divide function (shows detail)
+    Perft::perftDivide(board, depth);
 
-  
-
-  return 0;
+    return 0;
 }
