@@ -87,7 +87,7 @@ std::vector<Move> MoveGen::generateMoves(const Board &board){
 
     generateKingMoves(board, MoveList);
     generateKnightMoves(board, MoveList);
-    // generatePawnMoves(board, MoveList);
+    generatePawnMoves(board, MoveList);
     generateSlidingMoves(board, MoveList);
 
     return MoveList;
@@ -245,4 +245,189 @@ void MoveGen::generateSlidingMoves(const Board &board, std::vector<Move> &moveLi
 
 
     }
+}
+
+void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moveList){
+
+    int side = board.activeColour;
+    
+    int pawnType = (side == WHITE) ? WP : BP;
+    U64 pawns = board.bitboards[pawnType];
+
+    // occupancy masks
+    U64 enemyPieces = (side == WHITE) ? board.bitboards[BLACK_OCC] : board.bitboards[WHITE_OCC];    
+    U64 occupiedSquares = board.bitboards[ALL_OCC];
+
+    // White Pawns (travel up the board) NORTH
+
+    if (side == WHITE){
+
+        // while there are pawns on the board
+        while(pawns) {
+            int from = popLSB(pawns);
+            int to;
+
+            // single pawn push
+
+            to = from + NORTH; // move one square north
+
+            if (to >= SQ_A8 && !getBit(occupiedSquares, to)){ // if still on the board and no occupied square in front of pawn
+
+                if(to <= 7) { // if the pawn is going onto the final row
+                    // add a promotion for each possible piece
+                    moveList.push_back(makeMove(from, to, PROMOTION, WN)); // promote to kight
+                    moveList.push_back(makeMove(from, to, PROMOTION, WB)); // promote to bishop
+                    moveList.push_back(makeMove(from, to, PROMOTION, WR)); // promote to bishop
+                    moveList.push_back(makeMove(from, to, PROMOTION, WQ)); // promote to queen
+                } else {
+                    // normal pawn push
+                    moveList.push_back(makeMove(from, to, QUIET));
+
+                    // double push
+                    // only if in the second row (SQ_A2-SQ_H2)
+                    if (from >= SQ_A2 && from <= SQ_H2){
+                        int doublePushTo = from + NORTH + NORTH;
+
+                        if(!getBit(occupiedSquares, doublePushTo)){ // if not occupied
+                            // do double push
+                            moveList.push_back(makeMove(from, doublePushTo, DOUBLE_PUSH));
+                        }
+                    }
+                }
+
+            } 
+            
+            // captures
+
+            // capture left
+            to = from + NORHT_WEST;
+            if (to >= SQ_A8 && (from % 8) != 0){ // if still on board and not on file A (left most side of the baord)
+                if(getBit(enemyPieces, to)){ // enemy piece available for capture
+                    int capturedPiece = board.boardArr[to];
+                    if(to <= 7) { // if the pawn is going onto the final row
+                        // add a promotion for each possible piece with capture flag and pice
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WN, capturedPiece)); // promote to kight
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WB, capturedPiece)); // promote to bishop
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WR, capturedPiece)); // promote to bishop
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WQ, capturedPiece)); // promote to queen
+                    } else {
+                        // normal pawn push
+                        moveList.push_back(makeMove(from, to, CAPTURE, 0, capturedPiece));
+                    }
+                } else if (to == board.ep_target) {
+                    // capture via en pessant
+                    moveList.push_back(makeMove(from, to, CAPTURE | EN_PASSANT, 0, BP));
+                }
+
+            }
+
+            // capture right
+            to = from + NORTH_EAST;
+            if (to >= SQ_A8 && (from % 8) != 7){ // if still on board and not on file H (left most side of the baord)
+                if(getBit(enemyPieces, to)){ // enemy piece available for capture
+                    int capturedPiece = board.boardArr[to];
+                    if(to <= SQ_H8) { // if the pawn is going onto the final row
+                        // add a promotion for each possible piece with capture flag and pice
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WN, capturedPiece)); // promote to kight
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WB, capturedPiece)); // promote to bishop
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WR, capturedPiece)); // promote to bishop
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WQ, capturedPiece)); // promote to queen
+                    } else {
+                        // normal pawn push
+                        moveList.push_back(makeMove(from, to, CAPTURE, 0, capturedPiece));
+                    }
+                } else if (to == board.ep_target) {
+                    // capture via en pessant
+                    moveList.push_back(makeMove(from, to, CAPTURE | EN_PASSANT, 0, BP));
+                }
+
+            }
+        }
+
+    } else {
+
+
+        // while there are pawns on the board
+        while(pawns) {
+            int from = popLSB(pawns);
+            int to;
+
+            // single pawn push
+
+            to = from + SOUTH; // move one square north
+
+            if (to <= SQ_H1 && !getBit(occupiedSquares, to)){ // if still on the board and no occupied square in front of pawn
+
+                if(to >= SQ_A1) { // if the pawn is going onto the final row
+                    // add a promotion for each possible piece
+                    moveList.push_back(makeMove(from, to, PROMOTION, BN)); // promote to kight
+                    moveList.push_back(makeMove(from, to, PROMOTION, BB)); // promote to bishop
+                    moveList.push_back(makeMove(from, to, PROMOTION, BR)); // promote to bishop
+                    moveList.push_back(makeMove(from, to, PROMOTION, BQ)); // promote to queen
+                } else {
+                    // normal pawn push
+                    moveList.push_back(makeMove(from, to, QUIET));
+
+                    // double push
+                    // only if in the second row (SQ_A2-SQ_H2)
+                    if (from >= SQ_A7 && from <= SQ_H7){
+                        int doublePushTo = from + SOUTH + SOUTH;
+
+                        if(!getBit(occupiedSquares, doublePushTo)){ // if not occupied
+                            // do double push
+                            moveList.push_back(makeMove(from, doublePushTo, DOUBLE_PUSH));
+                        }
+                    }
+                }
+
+            } 
+            
+            // captures
+
+            // capture left
+            to = from + SOUTH_WEST;
+            if (to <= SQ_H1 && (from % 8) != 0){ // if still on board and not on file A (left most side of the baord)
+                if(getBit(enemyPieces, to)){ // enemy piece available for capture
+                    int capturedPiece = board.boardArr[to];
+                    if(to >= SQ_A1) { // if the pawn is going onto the final row
+                        // add a promotion for each possible piece with capture flag and pice
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BN, capturedPiece)); // promote to kight
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BB, capturedPiece)); // promote to bishop
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BR, capturedPiece)); // promote to bishop
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BQ, capturedPiece)); // promote to queen
+                    } else {
+                        // normal pawn push
+                        moveList.push_back(makeMove(from, to, CAPTURE, 0, capturedPiece));
+                    }
+                } else if (to == board.ep_target) {
+                    // capture via en pessant
+                    moveList.push_back(makeMove(from, to, CAPTURE | EN_PASSANT, 0, WP));
+                }
+
+            }
+
+            // capture right
+            to = from + SOUTH_EAST;
+            if (to <= SQ_H1 && (from % 8) != 7){ // if still on board and not on file H (left most side of the baord)
+                if(getBit(enemyPieces, to)){ // enemy piece available for capture
+                    int capturedPiece = board.boardArr[to];
+                    if(to >= SQ_A1) { // if the pawn is going onto the final row
+                        // add a promotion for each possible piece with capture flag and pice
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BN, capturedPiece)); // promote to kight
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BB, capturedPiece)); // promote to bishop
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BR, capturedPiece)); // promote to bishop
+                        moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BQ, capturedPiece)); // promote to queen
+                    } else {
+                        // normal pawn push
+                        moveList.push_back(makeMove(from, to, CAPTURE, 0, capturedPiece));
+                    }
+                } else if (to == board.ep_target) {
+                    // capture via en pessant
+                    moveList.push_back(makeMove(from, to, CAPTURE | EN_PASSANT, 0, WP));
+                }
+
+            }
+        }
+    }
+
 }
