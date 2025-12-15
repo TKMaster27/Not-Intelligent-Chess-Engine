@@ -184,8 +184,8 @@ void MoveGen::generateSlidingMoves(const Board &board, std::vector<Move> &moveLi
             // direction arrays for each piece (which way they move)
             // arrays are static so they are not recreated each time loop runs and created once
             static const int rookDirections[] = {NORTH, EAST, SOUTH, WEST};
-            static const int bishopDirections[] = {NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORHT_WEST};
-            static const int queenDirections[] = {NORTH, NORTH_EAST, EAST, SOUTH_EAST, SOUTH, SOUTH_WEST, WEST, NORHT_WEST};
+            static const int bishopDirections[] = {NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST};
+            static const int queenDirections[] = {NORTH, NORTH_EAST, EAST, SOUTH_EAST, SOUTH, SOUTH_WEST, WEST, NORTH_WEST};
 
             // pointer to the directions of current piece (naked pointer because now ownership of resources)
             const int* offsets = nullptr;
@@ -211,7 +211,7 @@ void MoveGen::generateSlidingMoves(const Board &board, std::vector<Move> &moveLi
                 while(true) { // take a step in that direction
 
                     // stop if moved too far to the left off the board (stop at A file)
-                    if ((offset == WEST || offset == NORHT_WEST || offset == SOUTH_WEST) && (to % 8) == 0) {
+                    if ((offset == WEST || offset == NORTH_WEST || offset == SOUTH_WEST) && (to % 8) == 0) {
                         break;
                     }
 
@@ -300,7 +300,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moveList)
             // captures
 
             // capture left
-            to = from + NORHT_WEST;
+            to = from + NORTH_WEST;
             if (to >= SQ_A8 && (from % 8) != 0){ // if still on board and not on file A (left most side of the baord)
                 if(getBit(enemyPieces, to)){ // enemy piece available for capture
                     int capturedPiece = board.boardArr[to];
@@ -429,5 +429,85 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moveList)
             }
         }
     }
+
+}
+
+
+bool MoveGen::isSquareAttacked(const Board& board, int square, int attackingColour){
+    // is square attacked by a pawn?
+    if(attackingColour == WHITE){
+        // a white pawn attacks an enemy piece from the south west and south east
+        // if the piece is not on the last row and not in file on edge and there is a white pawn in the attcking place then the square is attacked by white pawn
+        if(square+SOUTH_WEST <= SQ_H1 && (square % 8 != 0) && board.boardArr[square+SOUTH_WEST] == WP) return true; 
+        if(square+SOUTH_EAST <= SQ_H1 && (square % 8 != 7) && board.boardArr[square+SOUTH_EAST] == WP) return true;
+    } else {
+        // similar logic for black pawn
+
+        if(square+NORTH_WEST >= SQ_A8 && (square % 8 != 0) && board.boardArr[square+NORTH_WEST] == BP) return true; 
+        if(square+NORTH_EAST >= SQ_A8 && (square % 8 != 7) && board.boardArr[square+NORTH_EAST] == BP) return true;
+    }
+
+    // is square attacked by knight?
+    // get all enemy knights
+    U64 knights = (attackingColour == WHITE) ? board.bitboards[WN] : board.bitboards[BN];
+
+    // look up if the attacked square is in the knight attack LUT
+    // this is done by first finding all the places where a knight can attack the square (by pretending there is a knight there)
+    // and seeing if there is a knight in any of those attack possitions
+    if(knightAttacks[square] & knights) return true;
+
+    // is the square attacked by king piece
+    // similar logic to knights
+
+    // get king position
+    U64 king = (attackingColour == WHITE) ? board.bitboards[WK] : board.bitboards[BK];
+
+    // look up if the attacked square is in the king attack LUT
+    if(kingAttacks[square] & king) return true;
+
+    // is square attacked by sliding piece
+    // we can combine queens with the rook and bishop respectively as the queen moves in both ways
+    U64 rooksQueens = (attackingColour == WHITE) ? (board.bitboards[WR] | board.bitboards[WQ]) : (board.bitboards[BR] | board.bitboards[BQ]);
+    U64 bishopsQueens = (attackingColour == WHITE) ? (board.bitboards[WB] | board.bitboards[WQ]) : (board.bitboards[BB] | board.bitboards[BQ]);
+
+    // same logic in generate sliding moves to check if we "hit" a piece
+    // check orthogonal (rook/queen)
+    int orthogonalDirs[] = {NORTH, SOUTH, EAST, WEST};
+    for (int dir : orthogonalDirs) {
+        int t = square + dir;
+        while (t >= SQ_A8 && t <= SQ_H1) {
+            // Edge wrap check
+            // break when reach the edge
+            if ((dir == EAST && t % 8 == 0) || (dir == WEST && t % 8 == 7)) break;
+            
+            int piece = board.boardArr[t];
+            if (piece != -1) {
+                if ((1ULL << t) & rooksQueens) return true; // Hit enemy rook/queen
+                break; // Hit something else (blocker)
+            }
+            t += dir;
+        }
+    }
+
+    // Check Diagonal (Bishop/Queen)
+    int diagDirs[] = {NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST};
+    for (int dir : diagDirs) {
+        int t = square + dir;
+        while (t >= SQ_A8 && t <= SQ_H1) {
+            // break when reach the edge
+            if ((dir == NORTH_EAST || dir == SOUTH_EAST) && t % 8 == 0) break;
+            if ((dir == NORTH_WEST || dir == SOUTH_WEST) && t % 8 == 7) break;
+
+            int piece = board.boardArr[t];
+            if (piece != -1) {
+                if ((1ULL << t) & bishopsQueens) return true;
+                break;
+            }
+            t += dir;
+        }
+    }
+
+    // passes all the checks for all pieces so must not be attacked
+    return false;
 
 }

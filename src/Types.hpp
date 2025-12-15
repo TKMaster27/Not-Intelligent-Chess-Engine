@@ -58,7 +58,7 @@ enum Directions {
     NORTH_EAST = -7,
     SOUTH_EAST =  9,
     SOUTH_WEST =  7,
-    NORHT_WEST = -9
+    NORTH_WEST = -9
 };
 
 
