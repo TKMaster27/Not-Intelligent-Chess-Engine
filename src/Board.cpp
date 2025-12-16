@@ -1,4 +1,5 @@
 #include "Board.hpp"
+#include "BitUtils.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -12,11 +13,12 @@ Board::Board(const std::string &fenConfig) {
   // convert string to stream for processing
   std::istringstream ss(fenConfig);
 
-  std::string position, castlingStr, epStr;
+  std::string position, colourStr, castlingStr, epStr;
 
   // extract relevant information from the fen string
-  ss >> position >> activeColour >> castlingStr >> epStr >> halfMoves >> fullMoves;
+  ss >> position >> colourStr >> castlingStr >> epStr >> halfMoves >> fullMoves;
 
+  activeColour = (colourStr == "w") ? WHITE : BLACK;
 
   initBitBoards(position);
 
@@ -51,75 +53,51 @@ void Board::initBitBoards(const std::string &pos){
     bitboards[i] = 0;
   }
 
-  int current = 0;
+  // Initialize boardArr to NO_PIECE
+  for (int i = 0; i < 64; i++) {
+      boardArr[i] = NO_PIECE;
+  }
+
+  int rank = 7; // Start at Top Rank
+  int file = 0; // Start at File A
 
   // for each character in the fen string
   for (char c : pos) {
-    // if the character is a number skip that many squares
+    if (c == '/') {
+      rank--; // Move down one rank
+      file = 0; // Reset file
+      continue;
+    }
+
     if (std::isdigit(c)) {
       int skips = c - '0';
-      for(int i = 0; i < skips; ++i ){
-
-        boardArr[current++] = NO_PIECE;
+      file += skips; // Skip empty squares
+    } else {
+      // Calculate Square Index: A1=0, H8=63
+      int square = rank * 8 + file;
+      
+      int piece = NO_PIECE;
+      switch(c) {
+          case 'P': piece = WP; break;
+          case 'N': piece = WN; break;
+          case 'B': piece = WB; break;
+          case 'R': piece = WR; break;
+          case 'Q': piece = WQ; break;
+          case 'K': piece = WK; break;
+          case 'p': piece = BP; break;
+          case 'n': piece = BN; break;
+          case 'b': piece = BB; break;
+          case 'r': piece = BR; break;
+          case 'q': piece = BQ; break;
+          case 'k': piece = BK; break;
       }
-    } else if (std::isalpha(c)) {
-        
-        // when a piece is in the fen string, update the corresponding bitboard        
-        switch(c) {
-          case 'P': 
-            bitboards[WP] |= 1ULL << current;
-            boardArr[current] = WP;
-            break;
-          case 'N': 
-            bitboards[WN] |= 1ULL << current; 
-            boardArr[current] = WN;
-            break;
-          case 'B': 
-            bitboards[WB] |= 1ULL << current; 
-            boardArr[current] = WB;
-            break;
-          case 'R': 
-            bitboards[WR] |= 1ULL << current; 
-            boardArr[current] = WR;
-            break;
-          case 'Q': 
-            bitboards[WQ] |= 1ULL << current; 
-            boardArr[current] = WQ;
-            break;
-          case 'K': 
-            bitboards[WK] |= 1ULL << current; 
-            boardArr[current] = WK;
-            break;
-          case 'p': 
-            bitboards[BP] |= 1ULL << current; 
-            boardArr[current] = BP;
-            break;
-          case 'n': 
-            bitboards[BN] |= 1ULL << current; 
-            boardArr[current] = BN;
-            break;
-          case 'b': 
-            bitboards[BB] |= 1ULL << current; 
-            boardArr[current] = BB;
-            break;
-          case 'r': 
-            bitboards[BR] |= 1ULL << current; 
-            boardArr[current] = BR;
-            break;
-          case 'q': 
-            bitboards[BQ] |= 1ULL << current; 
-            boardArr[current] = BQ;
-            break;
-          case 'k': 
-            bitboards[BK] |= 1ULL << current; 
-            boardArr[current] = BK;
-            break;
-        }
 
-        current++;
-
-    } else if (c == '/') { // ignore slashes
-      continue;
+      if (piece != NO_PIECE) {
+          setBit(bitboards[piece], square);
+          boardArr[square] = piece;
+      }
+      
+      file++; // Move to next file
     }
 
   }
@@ -149,7 +127,7 @@ void Board::makeMove(Move m){
   boardArr[from] = NO_PIECE;
 
   if(flags & DOUBLE_PUSH) {
-    ep_target = (activeColour == WHITE) ? to + 8 : to - 8;
+    ep_target = (activeColour == WHITE) ? to - 8 : to + 8;
   } else {
     ep_target = NO_SQ;
   }
@@ -161,7 +139,7 @@ void Board::makeMove(Move m){
     halfMoves = 0;
 
     if (flags & EN_PASSANT) {
-      int capSq = (activeColour == WHITE) ? to + 8: to - 8;
+      int capSq = (activeColour == WHITE) ? to - 8: to + 8;
       bitboards[capturedPiece] &= ~(1ULL << capSq);
       boardArr[capSq] = NO_PIECE;
     } else {
@@ -222,10 +200,10 @@ void Board::makeMove(Move m){
   // If a rook is captured, the opponent loses castling rights on that side.
   // (e.g., if White takes a1, Black loses Queen-side castle).
   if (flags & CAPTURE) {
-      if (to == SQ_H1) castlingRights &= ~WK_CA;
-      else if (to == SQ_A1) castlingRights &= ~WQ_CA;
-      else if (to == SQ_H8) castlingRights &= ~BK_CA;
-      else if (to == SQ_A8) castlingRights &= ~BQ_CA;
+    if (to == SQ_H1) castlingRights &= ~WK_CA;
+    else if (to == SQ_A1) castlingRights &= ~WQ_CA;
+    else if (to == SQ_H8) castlingRights &= ~BK_CA;
+    else if (to == SQ_A8) castlingRights &= ~BQ_CA;
   }
 
   // handle promotions
@@ -270,7 +248,7 @@ std::string Board::convertSquareToCord(int square) {
     char file = 'a' + fileIndex;
     
     // Convert rank index to char (Row 0 is Rank '8', Row 7 is Rank '1')
-    char rank = '8' - rankIndex;
+    char rank = '1' + rankIndex;
 
     return {file, rank};
 }
@@ -280,7 +258,7 @@ int Board::convertCordToSquare(const std::string &cord) {
     if (cord.length() != 2) return -1; // Invalid format
 
     int file = cord[0] - 'a';       // 'a' - 'a' = 0
-    int rank = '8' - cord[1];       // '8' - '8' = 0 (Top row), '8' - '1' = 7 (Bottom row)
+    int rank = cord[1] - '1';       // '8' - '8' = 0 (Top row), '8' - '1' = 7 (Bottom row)
 
     // Check bounds
     if (file < 0 || file > 7 || rank < 0 || rank > 7) {
@@ -292,47 +270,54 @@ int Board::convertCordToSquare(const std::string &cord) {
 
 // print out the current board state to the console
 void Board::printBoard() const {
-  std::string result = "+---+---+---+---+---+---+---+---+\n";
+    std::string result;
 
-  for (size_t i = 0; i < 8; i++) {
-    for (size_t j = 0; j < 8; j++) {
-      result+= "| ";
+    result += "    +---+---+---+---+---+---+---+---+\n";
 
-      // get current piece code
-      int piece = boardArr[i*8+j];
+    for (int rank = 7; rank >= 0; rank--) {
+        // Rank number on the left
+        result += " " + std::to_string(rank + 1) + "  ";
 
-      switch(piece) {
-        case WP: result+="P "; break;
-        case WN: result+="N "; break;
-        case WB: result+="B "; break;
-        case WR: result+="R "; break;
-        case WQ: result+="Q "; break;
-        case WK: result+="K "; break;
-        case BP: result+="p "; break;
-        case BN: result+="n "; break;
-        case BB: result+="b "; break;
-        case BR: result+="r "; break;
-        case BQ: result+="q "; break;
-        case BK: result+="k "; break;
-        default: result+="  ";
-      }
+        for (int file = 0; file < 8; file++) {
+            result += "| ";
 
+            int piece = boardArr[rank * 8 + file];
+
+            switch (piece) {
+                case WP: result += "P "; break;
+                case WN: result += "N "; break;
+                case WB: result += "B "; break;
+                case WR: result += "R "; break;
+                case WQ: result += "Q "; break;
+                case WK: result += "K "; break;
+                case BP: result += "p "; break;
+                case BN: result += "n "; break;
+                case BB: result += "b "; break;
+                case BR: result += "r "; break;
+                case BQ: result += "q "; break;
+                case BK: result += "k "; break;
+                default: result += "  ";
+            }
+        }
+
+        result += "|\n";
+        result += "    +---+---+---+---+---+---+---+---+\n";
     }
-    result+="|\n+---+---+---+---+---+---+---+---+\n";
 
-  }
+    // File letters at the bottom
+    result += "      a   b   c   d   e   f   g   h\n";
 
-
-  std::cout << result;
+    std::cout << result;
 }
+
 
 // print the bitboard of the given index to the console
 void Board::printBitBoard(const int index) const {
   std::string result = "+---+---+---+---+---+---+---+---+\n";
 
-  for (size_t i = 0; i < 8; i++) {
-    for (size_t j = 0; j < 8; j++) {
-      int posIndex = i*8+j;
+  for (int rank = 7; rank >= 0; rank--) {
+    for (int file = 0; file < 8; file++) {
+      int posIndex = rank*8+file;
       result+= "| ";
       result+= (1ULL<<posIndex & bitboards[index]) > 0 ? "x" : " ";
       result+= " ";

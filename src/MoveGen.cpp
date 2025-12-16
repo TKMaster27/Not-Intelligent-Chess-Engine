@@ -137,8 +137,9 @@ void MoveGen::generateKingMoves(const Board &board, std::vector<Move> &moveList)
     // occupancy masks
     U64 sameColourPieces = (side == WHITE) ? board.bitboards[WHITE_OCC] : board.bitboards[BLACK_OCC];
     U64 enemyPieces = (side == WHITE) ? board.bitboards[BLACK_OCC] : board.bitboards[WHITE_OCC];
+    U64 allPieces = board.bitboards[ALL_OCC];
 
-    while (king) { // there are knights on the board to evaluate
+    while (king) { // there are king on the board to evaluate
 
         int from = popLSB(king); // get location of knight
 
@@ -160,6 +161,63 @@ void MoveGen::generateKingMoves(const Board &board, std::vector<Move> &moveList)
             }
         }
     }
+
+    // castling moves
+    // We must check:
+    // A. Has the right to castle? (castlingRights)
+    // B. Are the squares between King and Rook empty?
+    // C. Are the squares safe? (Cannot castle out of, through, or into check)
+
+    if (side == WHITE) {
+        // WHITE KING SIDE (e1 -> g1)
+        if (board.castlingRights & WK_CA) {
+            // Check Empty: f1(61), g1(62)
+            if (!getBit(allPieces, SQ_F1) && !getBit(allPieces, SQ_G1)) {
+                // Check Safe: e1(60), f1(61)
+                if (!isSquareAttacked(board, SQ_E1, BLACK) && 
+                    !isSquareAttacked(board, SQ_F1, BLACK) &&
+                    !isSquareAttacked(board, SQ_G1, BLACK)) {
+                    moveList.push_back(makeMove(SQ_E1, SQ_G1, CASTLING));
+                }
+            }
+        }
+        // WHITE QUEEN SIDE (e1 -> c1)
+        if (board.castlingRights & WQ_CA) {
+            // Check Empty: d1(59), c1(58), b1(57)
+            if (!getBit(allPieces, SQ_D1) && !getBit(allPieces, SQ_C1) && !getBit(allPieces, SQ_B1)) {
+                // Check Safe: e1(60), d1(59)
+                if (!isSquareAttacked(board, SQ_E1, BLACK) && 
+                    !isSquareAttacked(board, SQ_D1, BLACK) &&
+                    !isSquareAttacked(board, SQ_C1, BLACK)) {
+                    moveList.push_back(makeMove(SQ_E1, SQ_C1, CASTLING));
+                }
+            }
+        }
+    } else {
+        // BLACK KING SIDE (e8 -> g8)
+        if (board.castlingRights & BK_CA) {
+            // Check Empty: f8(5), g8(6)
+            if (!getBit(allPieces, SQ_F8) && !getBit(allPieces, SQ_G8)) {
+                if (!isSquareAttacked(board, SQ_E8, WHITE) && 
+                    !isSquareAttacked(board, SQ_F8, WHITE) &&
+                    !isSquareAttacked(board, SQ_G8, WHITE)) {
+                    moveList.push_back(makeMove(SQ_E8, SQ_G8, CASTLING));
+                }
+            }
+        }
+        // BLACK QUEEN SIDE (e8 -> c8)
+        if (board.castlingRights & BQ_CA) {
+            // Check Empty: d8(3), c8(2), b8(1)
+            if (!getBit(allPieces, SQ_D8) && !getBit(allPieces, SQ_C8) && !getBit(allPieces, SQ_B8)) {
+                if (!isSquareAttacked(board, SQ_E8, WHITE) && 
+                    !isSquareAttacked(board, SQ_D8, WHITE) &&
+                    !isSquareAttacked(board, SQ_C8, WHITE)) {
+                    moveList.push_back(makeMove(SQ_E8, SQ_C8, CASTLING));
+                }
+            }
+        }
+    }
+    
 }
 
 void MoveGen::generateSlidingMoves(const Board &board, std::vector<Move> &moveList){
@@ -271,9 +329,9 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moveList)
 
             to = from + NORTH; // move one square north
 
-            if (to >= SQ_A8 && !getBit(occupiedSquares, to)){ // if still on the board and no occupied square in front of pawn
+            if (to <= SQ_H8 && !getBit(occupiedSquares, to)){ // if still on the board and no occupied square in front of pawn
 
-                if(to <= 7) { // if the pawn is going onto the final row
+                if(to >= SQ_A8) { // if the pawn is going onto the final row
                     // add a promotion for each possible piece
                     moveList.push_back(makeMove(from, to, PROMOTION, WN)); // promote to kight
                     moveList.push_back(makeMove(from, to, PROMOTION, WB)); // promote to bishop
@@ -301,10 +359,10 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moveList)
 
             // capture left
             to = from + NORTH_WEST;
-            if (to >= SQ_A8 && (from % 8) != 0){ // if still on board and not on file A (left most side of the baord)
+            if (to <= SQ_H8 && (from % 8) != 0){ // if still on board and not on file A (left most side of the baord)
                 if(getBit(enemyPieces, to)){ // enemy piece available for capture
                     int capturedPiece = board.boardArr[to];
-                    if(to <= 7) { // if the pawn is going onto the final row
+                    if(to >= SQ_A8) { // if the pawn is going onto the final row
                         // add a promotion for each possible piece with capture flag and pice
                         moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WN, capturedPiece)); // promote to kight
                         moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WB, capturedPiece)); // promote to bishop
@@ -323,10 +381,10 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moveList)
 
             // capture right
             to = from + NORTH_EAST;
-            if (to >= SQ_A8 && (from % 8) != 7){ // if still on board and not on file H (left most side of the baord)
+            if (to <= SQ_H8 && (from % 8) != 7){ // if still on board and not on file H (left most side of the baord)
                 if(getBit(enemyPieces, to)){ // enemy piece available for capture
                     int capturedPiece = board.boardArr[to];
-                    if(to <= SQ_H8) { // if the pawn is going onto the final row
+                    if(to >= SQ_A8) { // if the pawn is going onto the final row
                         // add a promotion for each possible piece with capture flag and pice
                         moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WN, capturedPiece)); // promote to kight
                         moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, WB, capturedPiece)); // promote to bishop
@@ -356,9 +414,9 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moveList)
 
             to = from + SOUTH; // move one square north
 
-            if (to <= SQ_H1 && !getBit(occupiedSquares, to)){ // if still on the board and no occupied square in front of pawn
+            if (to >= SQ_A1 && !getBit(occupiedSquares, to)){ // if still on the board and no occupied square in front of pawn
 
-                if(to >= SQ_A1) { // if the pawn is going onto the final row
+                if(to <= SQ_H1) { // if the pawn is going onto the final row
                     // add a promotion for each possible piece
                     moveList.push_back(makeMove(from, to, PROMOTION, BN)); // promote to kight
                     moveList.push_back(makeMove(from, to, PROMOTION, BB)); // promote to bishop
@@ -386,10 +444,10 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moveList)
 
             // capture left
             to = from + SOUTH_WEST;
-            if (to <= SQ_H1 && (from % 8) != 0){ // if still on board and not on file A (left most side of the baord)
+            if (to >= SQ_A1 && (from % 8) != 0){ // if still on board and not on file A (left most side of the baord)
                 if(getBit(enemyPieces, to)){ // enemy piece available for capture
                     int capturedPiece = board.boardArr[to];
-                    if(to >= SQ_A1) { // if the pawn is going onto the final row
+                    if(to <= SQ_H1) { // if the pawn is going onto the final row
                         // add a promotion for each possible piece with capture flag and pice
                         moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BN, capturedPiece)); // promote to kight
                         moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BB, capturedPiece)); // promote to bishop
@@ -408,10 +466,10 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moveList)
 
             // capture right
             to = from + SOUTH_EAST;
-            if (to <= SQ_H1 && (from % 8) != 7){ // if still on board and not on file H (left most side of the baord)
+            if (to >= SQ_A1 && (from % 8) != 7){ // if still on board and not on file H (left most side of the baord)
                 if(getBit(enemyPieces, to)){ // enemy piece available for capture
                     int capturedPiece = board.boardArr[to];
-                    if(to >= SQ_A1) { // if the pawn is going onto the final row
+                    if(to <= SQ_H1) { // if the pawn is going onto the final row
                         // add a promotion for each possible piece with capture flag and pice
                         moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BN, capturedPiece)); // promote to kight
                         moveList.push_back(makeMove(from, to, PROMOTION | CAPTURE, BB, capturedPiece)); // promote to bishop
@@ -438,13 +496,13 @@ bool MoveGen::isSquareAttacked(const Board& board, int square, int attackingColo
     if(attackingColour == WHITE){
         // a white pawn attacks an enemy piece from the south west and south east
         // if the piece is not on the last row and not in file on edge and there is a white pawn in the attcking place then the square is attacked by white pawn
-        if(square+SOUTH_WEST <= SQ_H1 && (square % 8 != 0) && board.boardArr[square+SOUTH_WEST] == WP) return true; 
-        if(square+SOUTH_EAST <= SQ_H1 && (square % 8 != 7) && board.boardArr[square+SOUTH_EAST] == WP) return true;
+        if(square+SOUTH_WEST >= SQ_A1 && (square % 8 != 0) && board.boardArr[square+SOUTH_WEST] == WP) return true; 
+        if(square+SOUTH_EAST >= SQ_A1 && (square % 8 != 7) && board.boardArr[square+SOUTH_EAST] == WP) return true;
     } else {
         // similar logic for black pawn
 
-        if(square+NORTH_WEST >= SQ_A8 && (square % 8 != 0) && board.boardArr[square+NORTH_WEST] == BP) return true; 
-        if(square+NORTH_EAST >= SQ_A8 && (square % 8 != 7) && board.boardArr[square+NORTH_EAST] == BP) return true;
+        if(square+NORTH_WEST <= SQ_H8 && (square % 8 != 0) && board.boardArr[square+NORTH_WEST] == BP) return true; 
+        if(square+NORTH_EAST <= SQ_H8 && (square % 8 != 7) && board.boardArr[square+NORTH_EAST] == BP) return true;
     }
 
     // is square attacked by knight?
@@ -475,13 +533,13 @@ bool MoveGen::isSquareAttacked(const Board& board, int square, int attackingColo
     int orthogonalDirs[] = {NORTH, SOUTH, EAST, WEST};
     for (int dir : orthogonalDirs) {
         int t = square + dir;
-        while (t >= SQ_A8 && t <= SQ_H1) {
+        while (t >= SQ_A1 && t <= SQ_H8) {
             // Edge wrap check
             // break when reach the edge
             if ((dir == EAST && t % 8 == 0) || (dir == WEST && t % 8 == 7)) break;
             
             int piece = board.boardArr[t];
-            if (piece != -1) {
+            if (piece != NO_PIECE) {
                 if ((1ULL << t) & rooksQueens) return true; // Hit enemy rook/queen
                 break; // Hit something else (blocker)
             }
@@ -493,13 +551,13 @@ bool MoveGen::isSquareAttacked(const Board& board, int square, int attackingColo
     int diagDirs[] = {NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST};
     for (int dir : diagDirs) {
         int t = square + dir;
-        while (t >= SQ_A8 && t <= SQ_H1) {
+        while (t >= SQ_A1 && t <= SQ_H8) {
             // break when reach the edge
             if ((dir == NORTH_EAST || dir == SOUTH_EAST) && t % 8 == 0) break;
             if ((dir == NORTH_WEST || dir == SOUTH_WEST) && t % 8 == 7) break;
 
             int piece = board.boardArr[t];
-            if (piece != -1) {
+            if (piece != NO_PIECE) {
                 if ((1ULL << t) & bishopsQueens) return true;
                 break;
             }
