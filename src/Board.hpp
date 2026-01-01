@@ -15,6 +15,7 @@
 class Board {
   friend class MoveGen;
   friend class Perft;
+  friend class Evaluation;
   private:
     U64 bitboards[16]; // represents the entrire board with an array of bitboards
     int activeColour;

@@ -37,4 +37,15 @@ inline void setBit(U64 &bitboard, int square) {
     bitboard |= (1ULL << square);
 }
 
+// find the popcount of a given bitboard (number of 1s in binary digit)
+inline int popCount(U64 bitboard) {
+   #if defined(_MSC_VER)
+        // for windows
+        return (int)__popcnt64(bitboard);
+    # else
+        // for unix/linux
+        return __builtin_popcountll(bitboard);
+    # endif 
+}
+
 #endif
