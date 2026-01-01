@@ -1,4 +1,5 @@
 #include "Board.hpp"
+#include "Move.hpp"
 #include "BitUtils.hpp"
 #include <iostream>
 #include <sstream>

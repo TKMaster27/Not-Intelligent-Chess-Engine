@@ -1,4 +1,5 @@
 #include "MoveGen.hpp"
+#include "Move.hpp"
 #include "BitUtils.hpp"
 #include "Types.hpp"
 
