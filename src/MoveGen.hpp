@@ -8,6 +8,7 @@
 class MoveGen {
 public:
     // The main function: Returns a list of moves for the current side
+    static std::vector<Move> generateLegalMoves(const Board &board);
     static std::vector<Move> generateMoves(const Board& board);
     static bool isSquareAttacked(const Board& board, int square, int attackingColour);
 

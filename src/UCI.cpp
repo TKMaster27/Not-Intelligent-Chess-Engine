@@ -16,7 +16,7 @@ std::string moveToString(Move m, Board &board){
     std::string result = board.convertSquareToCord(fromSq(m)) + board.convertSquareToCord(toSq(m));
 
     //manage flags with promotion
-    if(promo(m) & PROMOTION) {
+    if(moveFlags(m) & PROMOTION) {
         int promotedTo = promo(m);
 
         if(promotedTo == WN || promotedTo == BN) result += 'n';
@@ -30,9 +30,9 @@ std::string moveToString(Move m, Board &board){
 
 // find the move that corresponses to uci input
 Move parseMove(std::string moveString, Board &board){
-    std::vector<Move> moves = MoveGen::generateMoves(board);
+    std::vector<Move> moves = MoveGen::generateLegalMoves(board);
 
-    for(Move m: moves){
+    for(const Move& m: moves){
         if (moveToString(m, board) == moveString){
             return m;
         }
@@ -72,9 +72,11 @@ void UCI::loop(){
                board = Board();
                ss >> token;
             } else if (token == "fen") {
-                ss >> token; // get fen string token
-                board = Board(token);
-                // ss >> token;
+                std::string fen;
+                while (ss >> token && token != "moves") {
+                    fen += token + " ";
+                }
+                board = Board(fen); 
             }
 
             while (ss >> token){
@@ -89,7 +91,7 @@ void UCI::loop(){
         } else if (token == "go") {
             
             // generate all possible moves
-            std::vector<Move> moves = MoveGen::generateMoves(board);
+            std::vector<Move> moves = MoveGen::generateLegalMoves(board);
 
             if(!moves.empty()){
                 int randIndex = g() % moves.size();

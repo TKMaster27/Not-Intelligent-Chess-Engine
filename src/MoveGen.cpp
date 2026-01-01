@@ -75,8 +75,33 @@ static void initTables() {
     isInitialised = true;
 }
 
-// move generator
+// filters out illegal moves and gives stricctly legal moves
+std::vector<Move> MoveGen::generateLegalMoves(const Board &board) {
+    std::vector<Move> pseudoMoves = generateMoves(board);
+    std::vector<Move> legalMoves;
+    legalMoves.reserve(pseudoMoves.size()); // reserve max moves to not need to resize vector
 
+    int side = board.activeColour;
+    int kingType = (side == WHITE) ? WK : BK;
+
+    for (const Move& move: pseudoMoves){
+        // make move on copy of board
+        Board nextBoard = board;
+        nextBoard.makeMove(move);
+
+        // find where king is
+        int kingSquare = getLSB(nextBoard.bitboards[kingType]);
+
+        // check if king is in danger
+        if(!isSquareAttacked(nextBoard, kingSquare, nextBoard.activeColour)){
+            legalMoves.push_back(move);
+        }
+    }
+
+    return legalMoves;
+}
+
+// move generator
 std::vector<Move> MoveGen::generateMoves(const Board &board){
 
     // if king/knight attack tables have not been initialised
