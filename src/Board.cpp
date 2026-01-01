@@ -239,7 +239,7 @@ void Board::makeMove(Move m){
 }
 
 // Converts an index (0-63) to algebraic notation (e.g., 60 -> "e8")
-std::string Board::convertSquareToCord(int square) {
+std::string Board::convertSquareToCord(int square) const {
     if (square < 0 || square > 63) return ""; // Safety check
 
     int rankIndex = square / 8;
@@ -255,7 +255,7 @@ std::string Board::convertSquareToCord(int square) {
 }
 
 // Converts algebraic notation to an index (e.g., "e8" -> 60)
-int Board::convertCordToSquare(const std::string &cord) {
+int Board::convertCordToSquare(const std::string &cord) const {
     if (cord.length() != 2) return -1; // Invalid format
 
     int file = cord[0] - 'a';       // 'a' - 'a' = 0

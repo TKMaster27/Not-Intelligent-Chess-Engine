@@ -14,7 +14,7 @@ int Evaluation::evaluate(Board &board) {
     // subtract sum up material score for black
     for (int piece = BP; piece <= BK; piece++){
         int pieceCount = popCount(board.bitboards[piece]);
-        score -= pieceCount * pieceValues[piece];
+        score -= pieceCount * pieceValues[piece-6];
     }
 
     // return positive score for white and negative for black

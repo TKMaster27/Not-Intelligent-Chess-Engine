@@ -13,7 +13,7 @@ typedef uint64_t U64;
 inline int getLSB(U64 bitboard){
     #if defined(_MSC_VER)
         unsigned long index;
-        _BitScanForward64(&index, bboard); // find index with windows
+        _BitScanForward64(&index, bitboard); // find index with windows
         return index;
     # else
         return __builtin_ctzll(bitboard); // count trailing zeros with gcc/clang

@@ -9,6 +9,7 @@
 #include "MoveGen.hpp"
 #include "Move.hpp"
 #include "Board.hpp"
+#include "Search.hpp"
 
 // converts engine moves into uci strings
 std::string moveToString(Move m, Board &board){
@@ -90,17 +91,13 @@ void UCI::loop(){
             //board.printBoard();
         } else if (token == "go") {
             
-            // generate all possible moves
-            std::vector<Move> moves = MoveGen::generateLegalMoves(board);
+            // find best move
+            Move bestMove = Search::searchPosition(board, 5);
 
-            if(!moves.empty()){
-                int randIndex = g() % moves.size();
-                Move bestMove = moves[randIndex];
-            
-
+            if(bestMove != 0){   
                 std::cout << "bestmove " << moveToString(bestMove, board) << std::endl;
             } else {
-               std::cout << "bestmove (none)" << std::endl; 
+                std::cout << "bestmove (none)" << std::endl; 
             }
 
         } else if (token == "print") {
