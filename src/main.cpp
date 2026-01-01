@@ -5,14 +5,20 @@
 #include "Types.hpp"
 #include "MoveGen.hpp"
 #include "Perft.hpp"
+#include "UCI.hpp"
 
 int main(int argc, char* argv[]) {
+
+    if (argc == 1) {
+      UCI::loop();
+      return 0;
+    }
     
     // Default to Start Position if no args provided (for quick testing)
-    std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+    std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     int depth = 1;
 
-    // Optional: Parse command line args for automated testing
+    // optional commands for testing
     // Usage: ./engine "FEN" depth
     if (argc >= 3) {
         fen = argv[1];
@@ -22,13 +28,13 @@ int main(int argc, char* argv[]) {
     Board board(fen);
     
     // Run the divide function (shows detail)
-    uint64_t result = Perft::perft(board, depth);
+    // uint64_t result = Perft::perft(board, depth);
     // board.printBoard();
-    // Perft::perftDivide(board, 1);
+    Perft::perftDivide(board, depth);
     
 
     // Output ONLY the result
-    std::cout << result << std::endl;
+    // std::cout << result << std::endl;
 
     return 0;
 }
