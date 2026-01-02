@@ -100,7 +100,7 @@ void UCI::loop(){
         } else if (token == "go") {
             
             // find best move
-            Move bestMove = Search::searchPosition(board, 6);
+            Move bestMove = Search::searchPosition(board, 7);
 
             if(bestMove != 0){   
                 std::cout << "bestmove " << moveToString(bestMove, board) << std::endl;
