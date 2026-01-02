@@ -33,6 +33,10 @@ int Evaluation::evaluate(Board &board) {
     pieceCount = popCount(board.bitboards[WB]);
     score += pieceCount * pieceValues[WB];
 
+    // sum up material score for white bishops
+    pieceCount = popCount(board.bitboards[WR]);
+    score += pieceCount * pieceValues[WR];
+
     // sum up material score for white queens
     pieceCount = popCount(board.bitboards[WQ]);
     score += pieceCount * pieceValues[WQ];
@@ -64,6 +68,10 @@ int Evaluation::evaluate(Board &board) {
     // sum up material score for black bishops
     pieceCount = popCount(board.bitboards[BB]);
     score -= pieceCount * pieceValues[BB-6];
+
+    // sum up material score for white bishops
+    pieceCount = popCount(board.bitboards[BR]);
+    score += pieceCount * pieceValues[BR-6];
 
     // sum up material score for black queens
     pieceCount = popCount(board.bitboards[BQ]);

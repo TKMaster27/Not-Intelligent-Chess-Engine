@@ -7,11 +7,65 @@
 #define MATE_VALUE 49000
 #define INVALID_SCORE -200000
 
+// searches deeper when captures are discovered on leaf nodes of search
+int Search::quiescence(Board &board, int alpha, int beta){
+    int eval = Evaluation::evaluate(board);
+
+    // fail beta cutoff, prune
+    if (eval >= beta) {
+        return beta;
+    }
+
+    // found beta score
+    if(eval > alpha){
+        alpha = eval;
+    }
+
+    // generate all possible moves
+    std::vector<Move> moves = MoveGen::generateMoves(board);
+
+    for (const Move &move: moves){
+
+        //check if move has capture, only extendsearch for captures
+        if(!(moveFlags(move) & CAPTURE)){
+            continue;
+        }
+
+        Board nextBoard = board; // copy current board
+        nextBoard.makeMove(move); // make move from movelist
+
+        // get position of the king of the current board
+        int kingType = (board.activeColour == WHITE) ? WK : BK;
+        int kingSquare = getLSB(nextBoard.bitboards[kingType]);
+
+        // check if the king of the current board is under attack on the next board by the next boards active colour
+        if(MoveGen::isSquareAttacked(nextBoard, kingSquare, nextBoard.activeColour)){
+            continue; // skip because board is illegal for the current board player
+        }
+
+
+        // recursive step - get score of the board after move is made
+        int score = -quiescence(nextBoard, -beta, -alpha);
+
+        // fail beta cutoff, prune
+        if (score >= beta) {
+            return beta;
+        }
+
+        // found beta score
+        if(score > alpha){
+            alpha = score;
+        }
+    }
+
+    return alpha;
+}
+
 int Search::negamax(Board &board, int alpha, int beta, int depth){
 
     // base case
     if(depth == 0){
-        return Evaluation::evaluate(board);
+        return quiescence(board, alpha, beta);
     }
 
     // generate all possible moves
