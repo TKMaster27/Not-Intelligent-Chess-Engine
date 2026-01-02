@@ -7,7 +7,7 @@
 #define MATE_VALUE 49000
 #define INVALID_SCORE -200000
 
-int Search::negamax(Board &board, int depth){
+int Search::negamax(Board &board, int alpha, int beta, int depth){
 
     // base case
     if(depth == 0){
@@ -16,8 +16,6 @@ int Search::negamax(Board &board, int depth){
 
     // generate all possible moves
     std::vector<Move> moves = MoveGen::generateMoves(board);
-
-    int bestScore = INVALID_SCORE;
     int legalMoves = 0;
 
     for (const Move &move: moves){
@@ -36,11 +34,16 @@ int Search::negamax(Board &board, int depth){
         legalMoves++;
 
         // recursive step - get score of the board after move is made
-        int score = -negamax(nextBoard, depth-1);
+        int score = -negamax(nextBoard, -beta, -alpha, depth-1);
 
-        // get max score
-        if(score > bestScore){
-            bestScore = score;
+        // fail beta cutoff, prune
+        if (score >= beta) {
+            return beta;
+        }
+
+        // found beta score
+        if(score > alpha){
+            alpha = score;
         }
     }
 
@@ -56,13 +59,13 @@ int Search::negamax(Board &board, int depth){
         int attacker = (board.activeColour == WHITE) ? BLACK : WHITE;
 
         if(MoveGen::isSquareAttacked(board, kingSquare, attacker)){
-            return -MATE_VALUE + depth; // try to mate sooner
+            return -MATE_VALUE - depth; // try to mate sooner
         } else {
             return 0;
         }
     }
 
-    return bestScore;
+    return alpha;
 }
 
 // wrapper for negamax and keep track of the best move associated with the best score
@@ -72,6 +75,12 @@ Move Search::searchPosition(const Board &board, int depth){
     std::vector<Move> moves = MoveGen::generateMoves(board);
 
     Move bestMove = 0;
+
+    // Initial bounds for Alpha-Beta
+    int alpha = INVALID_SCORE; 
+    int beta = -INVALID_SCORE;  
+
+
     int bestScore = INVALID_SCORE;
 
     for (const Move &move: moves){
@@ -89,7 +98,7 @@ Move Search::searchPosition(const Board &board, int depth){
 
 
         // recursive step - get score of the board after move is made
-        int score = -negamax(nextBoard, depth-1);
+        int score = -negamax(nextBoard, -beta, -alpha, depth-1);
 
         // uci info about search
         std::cout << "info score cp " << score
@@ -103,6 +112,10 @@ Move Search::searchPosition(const Board &board, int depth){
         if(score > bestScore){
             bestScore = score;
             bestMove = move;
+        }
+
+        if(score > alpha){
+            alpha = score;
         }
     }
 

@@ -9,7 +9,7 @@ class Search {
         static Move searchPosition(const Board &board, int depth);
 
     private:
-        static int negamax(Board &board, int depth);
+        static int negamax(Board &board, int alpha, int beta, int depth);
 };
 
 #endif 
