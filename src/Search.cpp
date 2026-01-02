@@ -80,7 +80,7 @@ Move Search::searchPosition(const Board &board, int depth){
 
         // get position of the king of the current board
         int kingType = (board.activeColour == WHITE) ? WK : BK;
-        int kingSquare = getLSB(board.bitboards[kingType]);
+        int kingSquare = getLSB(nextBoard.bitboards[kingType]);
 
         // check if the king of the current board is under attack on the next board by the next boards active colour
         if(MoveGen::isSquareAttacked(nextBoard, kingSquare, nextBoard.activeColour)){
