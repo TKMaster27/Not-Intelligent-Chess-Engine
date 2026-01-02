@@ -61,7 +61,15 @@ void UCI::loop(){
         if(token == "uci"){
             std::cout << "id name NICE 1.0" << std::endl;
             std::cout << "id author Tarique Mackay" << std::endl;
+
+            // advdertising for lichess
+            std::cout << "option name Move Overhead type spin default 10 min 0 max 5000" << std::endl;
+            std::cout << "option name Threads type spin default 1 min 1 max 128" << std::endl;
+            std::cout << "option name Hash type spin default 16 min 1 max 2048" << std::endl;
+
             std::cout << "uciok" << std::endl;
+        } else if (token == "setoption") {
+            continue; // TODO later perhaps
         } else if (token == "isready") {
             std::cout << "readyok" << std::endl;
         } else if (token == "ucinewgame") {
