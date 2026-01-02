@@ -61,5 +61,9 @@ enum Directions {
     SOUTH_WEST = -9  
 };
 
+// values in order pawn, knight, bishop, rook, queen, king
+// standard piece values times 100 with a bishop weighinh slightly better than kight
+constexpr int pieceValues[] = {100, 300, 350, 500, 900, 100000};
+
 
 #endif

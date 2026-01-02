@@ -1,4 +1,5 @@
 #include "MoveGen.hpp"
+#include "Move.hpp"
 #include "BitUtils.hpp"
 #include "Types.hpp"
 
@@ -517,6 +518,9 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moveList)
 
 
 bool MoveGen::isSquareAttacked(const Board& board, int square, int attackingColour){
+    // if king/knight attack tables have not been initialised
+    if (!isInitialised) initTables();
+    
     // is square attacked by a pawn?
     if(attackingColour == WHITE){
         // a white pawn attacks an enemy piece from the south west and south east

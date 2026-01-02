@@ -15,6 +15,8 @@
 class Board {
   friend class MoveGen;
   friend class Perft;
+  friend class Evaluation;
+  friend class Search;
   private:
     U64 bitboards[16]; // represents the entrire board with an array of bitboards
     int activeColour;
@@ -43,9 +45,9 @@ class Board {
     // move a piece form one place to another place
     void makeMove(Move m);
 
-    std::string convertSquareToCord(int square);
+    std::string convertSquareToCord(int square) const;
 
-    int convertCordToSquare(const std::string &cord);    
+    int convertCordToSquare(const std::string &cord) const;   
 
     // prints out a specific bitbaard given the index
     void printBitBoard(const int index) const;

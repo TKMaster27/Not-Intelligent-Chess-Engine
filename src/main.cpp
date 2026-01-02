@@ -28,13 +28,13 @@ int main(int argc, char* argv[]) {
     Board board(fen);
     
     // Run the divide function (shows detail)
-    // uint64_t result = Perft::perft(board, depth);
+    uint64_t result = Perft::perft(board, depth);
     // board.printBoard();
-    Perft::perftDivide(board, depth);
+    // Perft::perftDivide(board, depth);
     
 
     // Output ONLY the result
-    // std::cout << result << std::endl;
+    std::cout << result << std::endl;
 
     return 0;
 }

@@ -13,7 +13,7 @@ typedef uint64_t U64;
 inline int getLSB(U64 bitboard){
     #if defined(_MSC_VER)
         unsigned long index;
-        _BitScanForward64(&index, bboard); // find index with windows
+        _BitScanForward64(&index, bitboard); // find index with windows
         return index;
     # else
         return __builtin_ctzll(bitboard); // count trailing zeros with gcc/clang
@@ -35,6 +35,17 @@ inline bool getBit(U64 bitboard, int square){
 // set the bit given square
 inline void setBit(U64 &bitboard, int square) {
     bitboard |= (1ULL << square);
+}
+
+// find the popcount of a given bitboard (number of 1s in binary digit)
+inline int popCount(U64 bitboard) {
+   #if defined(_MSC_VER)
+        // for windows
+        return (int)__popcnt64(bitboard);
+    # else
+        // for unix/linux
+        return __builtin_popcountll(bitboard);
+    # endif 
 }
 
 #endif
