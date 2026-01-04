@@ -1,5 +1,5 @@
-#ifndef _SEARCH_H
-#define _SEARCH_H
+#ifndef CHESS_SEARCH_HPP
+#define CHESS_SEARCH_HPP
 
 #include "Board.hpp"
 #include "Move.hpp"

@@ -1,5 +1,5 @@
-#ifndef _PERFT_H
-#define _PERFT_H
+#ifndef CHESS_PERFT_HPP
+#define CHESS_PERFT_HPP
 
 #include "Board.hpp"
 #include <cstdint>

@@ -1,5 +1,5 @@
-#ifndef _EVALUATION_H
-#define _EVALUATION_H
+#ifndef CHESS_EVALUATION_HPP
+#define CHESS_EVALUATION_HPP
 
 #include "Board.hpp"
 

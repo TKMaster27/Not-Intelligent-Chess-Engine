@@ -1,4 +1,4 @@
-CXX = clang++
+CXX = g++
 CXXFLAGS = -std=c++20 -Wall -Wextra -O3
 
 SRCS = $(wildcard src/*.cpp)

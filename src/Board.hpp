@@ -1,5 +1,5 @@
-#ifndef _Board_H
-#define _Board_H 
+#ifndef CHESS_BOARD_HPP
+#define CHESS_BOARD_HPP 
 
 
 

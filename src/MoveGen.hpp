@@ -1,5 +1,5 @@
-#ifndef _MOVEGEN_HPP
-#define _MOVEGEN_HPP
+#ifndef CHESS_MOVEGEN_HPP
+#define CHESS_MOVEGEN_HPP
 
 #include "Board.hpp"
 #include "Move.hpp"

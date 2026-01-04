@@ -1,6 +1,6 @@
 
-#ifndef _MOVE_H
-#define _MOVE_H
+#ifndef CHESS_MOVE_HPP
+#define CHESS_MOVE_HPP
 
 #include <cstdint>
 
