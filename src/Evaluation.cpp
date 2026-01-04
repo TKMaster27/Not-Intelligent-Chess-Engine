@@ -4,12 +4,21 @@
 
 int Evaluation::evaluate(Board &board) {
     int score = 0;
-    int pieceCount = 0;
 
     // --- white evaluation --
 
+    // determine if there is no queen to decide which PST kings should use
+    const int* whiteKingTableToUse = (board.bitboards[BQ] == 0) ? kingEndgameTable : kingTable;
+
+    // king points
+    U64 bitboard = board.bitboards[WK];
+    while (bitboard) {
+        int piecePosition = popLSB(bitboard);
+        score += pieceValues[WK] + whiteKingTableToUse[piecePosition]; // material score + PST score
+    }
+
     // pawn points
-    U64 bitboard = board.bitboards[WP];
+    bitboard = board.bitboards[WP];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
         score += pieceValues[WP] + pawnTable[piecePosition]; // material score + PST score
@@ -22,27 +31,38 @@ int Evaluation::evaluate(Board &board) {
         score += pieceValues[WN] + knightTable[piecePosition]; // material score + PST score
     }
 
-    // king points
-    bitboard = board.bitboards[WK];
+    // bishop points
+    bitboard = board.bitboards[WB];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score += pieceValues[WK] + kingTable[piecePosition]; // material score + PST score
+        score += pieceValues[WB] + bishopTable[piecePosition]; // material score + PST score
+    }
+    
+    // rooks points
+    bitboard = board.bitboards[WR];
+    while (bitboard) {
+        int piecePosition = popLSB(bitboard);
+        score += pieceValues[WR] + rookTable[piecePosition]; // material score + PST score
     }
 
-    // sum up material score for white bishops
-    pieceCount = popCount(board.bitboards[WB]);
-    score += pieceCount * pieceValues[WB];
-
-    // sum up material score for white bishops
-    pieceCount = popCount(board.bitboards[WR]);
-    score += pieceCount * pieceValues[WR];
-
-    // sum up material score for white queens
-    pieceCount = popCount(board.bitboards[WQ]);
-    score += pieceCount * pieceValues[WQ];
-    
+    // queen points
+    bitboard = board.bitboards[WQ];
+    while (bitboard) {
+        int piecePosition = popLSB(bitboard);
+        score += pieceValues[WQ] + queenTable[piecePosition]; // material score + PST score
+    }
 
     // --- black evaluation --
+
+    // determine if there is no queen to decide which PST kings should use
+    const int* blackKingTableToUse = (board.bitboards[WQ] == 0) ? kingEndgameTable : kingTable;
+
+        // king points
+    bitboard = board.bitboards[BK];
+    while (bitboard) {
+        int piecePosition = popLSB(bitboard);
+        score -= pieceValues[BK-6] + blackKingTableToUse[piecePosition^56]; // material score + PST score
+    }
 
     // pawn points
     bitboard = board.bitboards[BP];
@@ -58,24 +78,26 @@ int Evaluation::evaluate(Board &board) {
         score -= pieceValues[BN-6] + knightTable[piecePosition^56]; // material score + PST score
     }
 
-    // king points
-    bitboard = board.bitboards[BK];
+    // bishop points
+    bitboard = board.bitboards[BB];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score -= pieceValues[BK-6] + kingTable[piecePosition^56]; // material score + PST score
+        score -= pieceValues[BB-6] + bishopTable[piecePosition^56]; // material score + PST score
+    }
+    
+    // rooks points
+    bitboard = board.bitboards[BR];
+    while (bitboard) {
+        int piecePosition = popLSB(bitboard);
+        score -= pieceValues[BR-6] + rookTable[piecePosition^56]; // material score + PST score
     }
 
-    // sum up material score for black bishops
-    pieceCount = popCount(board.bitboards[BB]);
-    score -= pieceCount * pieceValues[BB-6];
-
-    // sum up material score for white bishops
-    pieceCount = popCount(board.bitboards[BR]);
-    score += pieceCount * pieceValues[BR-6];
-
-    // sum up material score for black queens
-    pieceCount = popCount(board.bitboards[BQ]);
-    score -= pieceCount * pieceValues[BQ-6];
+    // queen points
+    bitboard = board.bitboards[BQ];
+    while (bitboard) {
+        int piecePosition = popLSB(bitboard);
+        score -= pieceValues[BQ-6] + queenTable[piecePosition^56]; // material score + PST score
+    }
 
     // return positive score for white and negative for black
     return (board.activeColour == WHITE) ? score : -score;

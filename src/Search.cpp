@@ -96,7 +96,7 @@ int Search::negamax(Board &board, int alpha, int beta, int depth){
 
     //sort moves for maximum pruning
     std::sort(moves.begin(), moves.end(), [&](const Move &a, const Move &b) {return scoreMove(a) > scoreMove(b);});
-    
+
     int legalMoves = 0;
 
     for (const Move &move: moves){
@@ -154,6 +154,9 @@ Move Search::searchPosition(const Board &board, int depth){
 
     // generate all possible moves
     std::vector<Move> moves = MoveGen::generateMoves(board);
+
+    //sort moves for maximum pruning
+    std::sort(moves.begin(), moves.end(), [&](const Move &a, const Move &b) {return scoreMove(a) > scoreMove(b);});
 
     Move bestMove = 0;
 
