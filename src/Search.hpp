@@ -10,6 +10,8 @@ class Search {
 
     private:
         static int negamax(Board &board, int alpha, int beta, int depth);
+        static int quiescence(Board &booard, int alpha, int beta);
+        static int scoreMove(const Move &move);
 };
 
 #endif 
