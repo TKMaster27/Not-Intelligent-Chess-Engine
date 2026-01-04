@@ -42,3 +42,12 @@
 
 # macos
 *.DS_Store
+
+# local engine versions
+*/engines/
+
+# environments
+venv
+.venv
+env
+.env
