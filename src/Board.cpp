@@ -47,6 +47,10 @@ Board::Board(const std::string &fenConfig) {
 
 Board::~Board(){}
 
+int Board::getSideToMove() const {
+  return activeColour;
+}
+
 void Board::initBitBoards(const std::string &pos){
 
   // initialize the bitboards to all zeros
