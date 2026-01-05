@@ -1,5 +1,5 @@
-#ifndef _TYPES_H
-#define _TYPES_H
+#ifndef CHESS_TYPES_HPP
+#define CHESS_TYPES_HPP
 
 #include <cstdint>
 

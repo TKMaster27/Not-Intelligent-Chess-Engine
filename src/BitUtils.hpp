@@ -1,5 +1,5 @@
-#ifndef _BITUTILS_H
-#define _BITUTILS_H
+#ifndef CHESS_BITUTILS_HPP
+#define CHESS_BITUTILS_HPP
 
 #include <cstdint>
 #if defined(_MSC_VER) // for windows and cross compatability :(

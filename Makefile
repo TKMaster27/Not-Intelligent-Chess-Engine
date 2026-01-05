@@ -1,5 +1,5 @@
-CXX = clang++
-CXXFLAGS = -std=c++20 -Wall -Wextra -O2
+CXX = g++
+CXXFLAGS = -std=c++20 -Wall -Wextra -O3
 
 SRCS = $(wildcard src/*.cpp)
 OBJS = $(SRCS:.cpp=.o)

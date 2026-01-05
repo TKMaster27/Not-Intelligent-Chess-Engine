@@ -1,5 +1,5 @@
-#ifndef _UCI_H
-#define _UCI_H
+#ifndef CHESS_UCI_HPP
+#define CHESS_UCI_HPP
 
 #include "Board.hpp"
 

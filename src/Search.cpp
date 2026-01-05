@@ -3,6 +3,7 @@
 #include "MoveGen.hpp"
 #include "BitUtils.hpp"
 #include <iostream>
+#include <algorithm>
 
 #define MATE_VALUE 49000
 #define INVALID_SCORE -200000
