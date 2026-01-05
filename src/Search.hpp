@@ -9,10 +9,10 @@ class Search {
         static Move searchPosition(const Board &board, int depth);
 
     private:
-        static int negamax(Board &board, int alpha, int beta, int depth);
+        static int negamax(Board &board, int alpha, int beta, int depth, int ply);
         static int searchRoot(Board &board, int alpha, int beta, int depth, Move &bestMoveOut);
         static int quiescence(Board &booard, int alpha, int beta);
-        static int scoreMove(const Move &move);
+        static int scoreMove(const Move &move, int ply);
 };
 
 #endif 

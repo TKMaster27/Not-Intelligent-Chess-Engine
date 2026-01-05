@@ -15,8 +15,10 @@ static int allocatedTime = 0;
 static bool stopSearch = false;
 static long nodesVisited = 0;
 
+Move killerMoves[64][2];
+
 // scores moves to ensure move order and maximum pruning
-int Search::scoreMove(const Move &move){
+int Search::scoreMove(const Move &move, int ply){
     // prioritise captures with the MVV-LVA methodology (Most Valuable Victum - Least Valuable Agressor)
     if(moveFlags(move) & CAPTURE){
         int victimType = captured(move);
@@ -31,6 +33,10 @@ int Search::scoreMove(const Move &move){
         int promotionType = promo(move);
         return 5000 + pieceValues[promotionType%6];
     }
+
+    // bonus points if the current move is a killer move
+    if (move == killerMoves[ply][0]) return 9000;
+    if (move == killerMoves[ply][1]) return 8000;
 
     return 0;
 }
@@ -53,7 +59,7 @@ int Search::quiescence(Board &board, int alpha, int beta){
     std::vector<Move> moves = MoveGen::generateMoves(board);
 
     //sort moves for maximum pruning
-    std::sort(moves.begin(), moves.end(), [&](const Move &a, const Move &b) {return scoreMove(a) > scoreMove(b);});
+    std::sort(moves.begin(), moves.end(), [&](const Move &a, const Move &b) {return scoreMove(a, 0) > scoreMove(b, 0);});
 
     for (const Move &move: moves){
 
@@ -98,7 +104,7 @@ int Search::searchRoot(Board &board, int alpha, int beta, int depth, Move &bestM
     std::vector<Move> moves = MoveGen::generateMoves(board);
 
     //sort moves for maximum pruning
-    std::sort(moves.begin(), moves.end(), [&](const Move &a, const Move &b) {return scoreMove(a) > scoreMove(b);});
+    std::sort(moves.begin(), moves.end(), [&](const Move &a, const Move &b) {return scoreMove(a, 0) > scoreMove(b, 0);});
 
     int bestScore = -50000;
     Move bestLocalMove = 0;
@@ -120,7 +126,7 @@ int Search::searchRoot(Board &board, int alpha, int beta, int depth, Move &bestM
         legalMoves++;
 
         // recursive step - get score of the board after move is made
-        int score = -negamax(nextBoard, -beta, -alpha, depth-1);
+        int score = -negamax(nextBoard, -beta, -alpha, depth-1, 1);
 
         if (stopSearch) return 0;
 
@@ -166,7 +172,7 @@ int Search::searchRoot(Board &board, int alpha, int beta, int depth, Move &bestM
     return bestScore;
 }
 
-int Search::negamax(Board &board, int alpha, int beta, int depth){
+int Search::negamax(Board &board, int alpha, int beta, int depth, int ply){
 
     // --- start time check ---
     // every 2048 nodes check the time (same as nodesVis % 2048)
@@ -195,7 +201,7 @@ int Search::negamax(Board &board, int alpha, int beta, int depth){
     std::vector<Move> moves = MoveGen::generateMoves(board);
 
     //sort moves for maximum pruning
-    std::sort(moves.begin(), moves.end(), [&](const Move &a, const Move &b) {return scoreMove(a) > scoreMove(b);});
+    std::sort(moves.begin(), moves.end(), [&](const Move &a, const Move &b) {return scoreMove(a, ply) > scoreMove(b, ply);});
 
     int legalMoves = 0;
 
@@ -215,10 +221,18 @@ int Search::negamax(Board &board, int alpha, int beta, int depth){
         legalMoves++;
 
         // recursive step - get score of the board after move is made
-        int score = -negamax(nextBoard, -beta, -alpha, depth-1);
+        int score = -negamax(nextBoard, -beta, -alpha, depth-1, ply+1);
 
         // fail beta cutoff, prune
         if (score >= beta) {
+
+            if ( !(moveFlags(move) & CAPTURE) ) {
+                // Shift old killer to slot 1
+                killerMoves[ply][1] = killerMoves[ply][0];
+                // Store new killer in slot 0
+                killerMoves[ply][0] = move;
+            }
+
             return beta;
         }
 
@@ -253,6 +267,12 @@ int Search::negamax(Board &board, int alpha, int beta, int depth){
 Move Search::searchPosition(const Board &board, int timeInMilliSec){
     // local copy for const correctness
     Board searchBoard = board;
+
+    // clear killer moves
+    for(int i = 0; i < 64; i++){
+        killerMoves[i][0] = 0;
+        killerMoves[i][1] = 0;
+    }
 
     // initialise time management variables
     stopSearch = false;

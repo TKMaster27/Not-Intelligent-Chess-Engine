@@ -103,7 +103,7 @@ void UCI::loop(){
             int btime = 0;
             int winc = 0;
             int binc = 0;
-            int movetime = 0;
+            int movetime = -1;
 
             while (ss >> token){
                 if (token == "wtime") ss >> wtime;
@@ -133,7 +133,7 @@ void UCI::loop(){
             if (timeToThink <= 0) timeToThink = 1000;
             
             // find best move
-            Move bestMove = Search::searchPosition(board, 5000);
+            Move bestMove = Search::searchPosition(board, timeToThink);
 
             if(bestMove != 0){   
                 std::cout << "bestmove " << moveToString(bestMove, board) << std::endl;
