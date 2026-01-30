@@ -14,42 +14,42 @@ int Evaluation::evaluate(Board &board) {
     U64 bitboard = board.bitboards[WK];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score += pieceValues[WK] + whiteKingTableToUse[piecePosition]; // material score + PST score
+        score += pieceValues[WK] + whiteKingTableToUse[piecePosition^56]; // material score + PST score
     }
 
     // pawn points
     bitboard = board.bitboards[WP];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score += pieceValues[WP] + pawnTable[piecePosition]; // material score + PST score
+        score += pieceValues[WP] + pawnTable[piecePosition^56]; // material score + PST score
     }
 
     // knight points
     bitboard = board.bitboards[WN];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score += pieceValues[WN] + knightTable[piecePosition]; // material score + PST score
+        score += pieceValues[WN] + knightTable[piecePosition^56]; // material score + PST score
     }
 
     // bishop points
     bitboard = board.bitboards[WB];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score += pieceValues[WB] + bishopTable[piecePosition]; // material score + PST score
+        score += pieceValues[WB] + bishopTable[piecePosition^56]; // material score + PST score
     }
     
     // rooks points
     bitboard = board.bitboards[WR];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score += pieceValues[WR] + rookTable[piecePosition]; // material score + PST score
+        score += pieceValues[WR] + rookTable[piecePosition^56]; // material score + PST score
     }
 
     // queen points
     bitboard = board.bitboards[WQ];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score += pieceValues[WQ] + queenTable[piecePosition]; // material score + PST score
+        score += pieceValues[WQ] + queenTable[piecePosition^56]; // material score + PST score
     }
 
     // --- black evaluation --
@@ -61,42 +61,42 @@ int Evaluation::evaluate(Board &board) {
     bitboard = board.bitboards[BK];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score -= pieceValues[BK-6] + blackKingTableToUse[piecePosition^56]; // material score + PST score
+        score -= pieceValues[BK-6] + blackKingTableToUse[piecePosition]; // material score + PST score
     }
 
     // pawn points
     bitboard = board.bitboards[BP];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score -= pieceValues[BP-6] + pawnTable[piecePosition^56]; // material score + PST score
+        score -= pieceValues[BP-6] + pawnTable[piecePosition]; // material score + PST score
     }
 
     // knight points
     bitboard = board.bitboards[BN];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score -= pieceValues[BN-6] + knightTable[piecePosition^56]; // material score + PST score
+        score -= pieceValues[BN-6] + knightTable[piecePosition]; // material score + PST score
     }
 
     // bishop points
     bitboard = board.bitboards[BB];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score -= pieceValues[BB-6] + bishopTable[piecePosition^56]; // material score + PST score
+        score -= pieceValues[BB-6] + bishopTable[piecePosition]; // material score + PST score
     }
     
     // rooks points
     bitboard = board.bitboards[BR];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score -= pieceValues[BR-6] + rookTable[piecePosition^56]; // material score + PST score
+        score -= pieceValues[BR-6] + rookTable[piecePosition]; // material score + PST score
     }
 
     // queen points
     bitboard = board.bitboards[BQ];
     while (bitboard) {
         int piecePosition = popLSB(bitboard);
-        score -= pieceValues[BQ-6] + queenTable[piecePosition^56]; // material score + PST score
+        score -= pieceValues[BQ-6] + queenTable[piecePosition]; // material score + PST score
     }
 
     // return positive score for white and negative for black

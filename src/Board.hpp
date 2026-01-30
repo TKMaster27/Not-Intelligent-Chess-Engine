@@ -54,6 +54,8 @@ class Board {
 
     //print board
     void printBoard() const;
+
+    int getSideToMove() const;
 };
 
 #endif // !Board
